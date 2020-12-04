@@ -2,13 +2,15 @@ package mux
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"os"
 
+	"github.com/gorilla/handlers"
 	"gopkg.in/go-playground/validator.v9"
 )
 
-type Config struct {
-}
+type Config struct{}
 
 type Default struct {
 	config Config
@@ -32,14 +34,25 @@ func (e *Default) ApplySpec(ctx context.Context, spec MuxSpec) (err error) {
 	e.mux = http.NewServeMux()
 
 	for _, rule := range e.spec.Rules {
-		var hfunc http.HandlerFunc = nil
-		e.mux.HandleFunc(rule.Accept, hfunc)
+		fmt.Printf("registering: %+v\n", rule)
+
+		var hfunc http.Handler = buildMuxSpecRuleHandlerFunc(rule)
+
+		hfunc = handlers.CombinedLoggingHandler(os.Stdout, hfunc)
+		hfunc = handlers.CombinedLoggingHandler(os.Stdout, hfunc)
+
+		e.mux.Handle(rule.Accept, hfunc)
 	}
 
 	return
 }
 
 func (e *Default) GetHandler(ctx context.Context) (h http.Handler, err error) {
-	h = e.mux
+	var hfunc http.HandlerFunc = func(rw http.ResponseWriter, r *http.Request) {
+		e.mux.ServeHTTP(rw, r)
+	}
+
+	h = hfunc
+
 	return
 }

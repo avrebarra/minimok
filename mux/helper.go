@@ -7,7 +7,17 @@ import (
 	"time"
 
 	"github.com/cssivision/reverseproxy"
+	"gopkg.in/yaml.v3"
 )
+
+func MuxSpecFromYAML(bits []byte) (sp MuxSpec, err error) {
+	err = yaml.Unmarshal(bits, &sp)
+	if err != nil {
+		return
+	}
+
+	return
+}
 
 func buildMuxSpecRuleHandlerFunc(rule MuxSpecRule) (hf http.HandlerFunc) {
 	hf = func(w http.ResponseWriter, r *http.Request) {
@@ -32,6 +42,7 @@ func buildMuxSpecRuleHandlerFunc(rule MuxSpecRule) (hf http.HandlerFunc) {
 		}
 
 		w.Write([]byte(rule.MockResponse.Body))
+
 		return
 	}
 

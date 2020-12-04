@@ -11,22 +11,22 @@ type Mux interface {
 }
 
 type MuxSpec struct {
-	Rules []MuxSpecRule `json:"rules"`
+	Rules []MuxSpecRule `yaml:"rules"`
 }
 
 type MuxSpecRule struct {
-	Accept       string `json:"accept"`
-	UseOrigin    string `json:"use_origin"`
+	Accept       string `yaml:"accept"`
+	UseOrigin    string `yaml:"use_origin"`
 	MockResponse struct {
-		Status  int               `json:"status"`
-		Body    string            `json:"body"`
-		Headers map[string]string `json:"header"`
-	} `json:"mock_response"`
-	MockLatency MuxSpecRuleLatency `json:"mock_latency"`
+		Status  int               `yaml:"status"`
+		Body    string            `yaml:"body"`
+		Headers map[string]string `yaml:"header"`
+	} `yaml:"mock_response"`
+	MockLatency MuxSpecRuleLatency `yaml:"mock_latency"`
 }
 
 type MuxSpecRuleLatency struct {
-	Mode  string `json:"mode"`
-	Value int    `json:"value"`
-	Swing int    `json:"swing"`
+	Mode  string `yaml:"mode"`
+	Value int    `yaml:"value"`
+	Swing int    `yaml:"swing"`
 }

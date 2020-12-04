@@ -1,11 +1,11 @@
 rules:
   - accept: /
-    use_origin: http://localhost:9797
+    use_origin: https://askubuntu.com/
     mock_response:
       status: 200
       body: '{"rules":[{"accept":"/","origin":"http://localhost:9797","mock_response":"","mock_latency":{"mode":"swing","value":"2000","swing":"2000"}}]}'
-      header: []
+      header: {}
     mock_latency:
       mode: swing
-      value: "2000"
-      swing: "100"
+      value: 2000
+      swing: 100
