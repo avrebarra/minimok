@@ -4,6 +4,8 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"path"
+	"strings"
 	"time"
 
 	"github.com/cssivision/reverseproxy"
@@ -26,12 +28,20 @@ func buildMuxSpecRuleHandlerFunc(rule MuxSpecRule) (hf http.HandlerFunc) {
 
 		// proxy if use origin specified
 		if rule.UseOrigin != "" {
+			// determine target path
+			prefix := path.Clean(rule.Accept)
+			r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
+
+			// parse target url
 			path, err := url.Parse(rule.UseOrigin)
 			if err != nil {
 				panic(err)
 			}
+
+			// run proxy
 			proxy := reverseproxy.NewReverseProxy(path)
 			proxy.ServeHTTP(w, r)
+
 			return
 		}
 

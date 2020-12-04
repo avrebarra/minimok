@@ -1,11 +1,22 @@
 rules:
-  - accept: /
+  - accept: /ubuntu/
     use_origin: https://askubuntu.com/
+    mock_latency:
+      mode: swing
+      value: 2000
+      swing: 100
+
+  - accept: /godoc/
+    use_origin: http://godoc.org/
+    mock_latency:
+      mode: const
+      value: 1000
+
+  - accept: /mocked/
     mock_response:
       status: 200
       body: '{"rules":[{"accept":"/","origin":"http://localhost:9797","mock_response":"","mock_latency":{"mode":"swing","value":"2000","swing":"2000"}}]}'
       header: {}
     mock_latency:
-      mode: swing
-      value: 2000
-      swing: 100
+      mode: max
+      value: 10000
