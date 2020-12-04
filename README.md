@@ -1,6 +1,6 @@
 <div class="info" align="left">
   <h1 class="name">🦹🏾‍♀️ minimok</h1>
-  postman collections as local documentation server
+  minimum mocking/proxy server
   <br>
   <br>
 
