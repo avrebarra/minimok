@@ -1,0 +1,28 @@
+minimok:
+- name: ubuntu_mock_server
+  port: 1234
+  rules:
+    - accept: /ubuntu/
+      use_origin: https://askubuntu.com/
+      mock_latency:
+        mode: swing
+        value: 2000
+        swing: 100
+
+- name: other_mock_server
+  port: 1236
+  rules:
+    - accept: /godoc/
+      use_origin: http://godoc.org/
+      mock_latency:
+        mode: const
+        value: 1000
+
+    - accept: /mocked/
+      mock_response:
+        status: 200
+        body: '{"rules":[{"accept":"/","origin":"http://localhost:9797","mock_response":"","mock_latency":{"mode":"swing","value":"2000","swing":"2000"}}]}'
+        header: {}
+      mock_latency:
+        mode: max
+        value: 10000
