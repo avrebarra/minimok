@@ -44,7 +44,7 @@ func (c *CommandStart) Run() (err error) {
 	}
 
 	// setup mux
-	m := mux.New(mux.Config{})
+	m := mux.New()
 	h, err := m.GetHandler(context.Background())
 	if err != nil {
 		err = fmt.Errorf("failed getting initial handler")

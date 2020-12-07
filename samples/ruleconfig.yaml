@@ -1,3 +1,5 @@
+name: random
+port: 1234
 rules:
   - accept: /ubuntu/
     use_origin: https://askubuntu.com/

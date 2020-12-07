@@ -7,25 +7,17 @@ import (
 	"os"
 
 	"github.com/gorilla/handlers"
-	"gopkg.in/go-playground/validator.v9"
 )
 
-type Config struct{}
-
 type Default struct {
-	config Config
-	spec   MuxSpec
-	mux    *http.ServeMux
+	spec MuxSpec
+	mux  *http.ServeMux
 }
 
-func New(cfg Config) Mux {
-	if err := validator.New().Struct(cfg); err != nil {
-		panic(err)
-	}
+func New() Mux {
 	return &Default{
-		config: cfg,
-		mux:    http.NewServeMux(),
-		spec:   MuxSpec{},
+		mux:  http.NewServeMux(),
+		spec: MuxSpec{},
 	}
 }
 

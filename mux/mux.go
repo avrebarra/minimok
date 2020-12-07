@@ -11,6 +11,8 @@ type Mux interface {
 }
 
 type MuxSpec struct {
+	Name  string        `yaml:"name"`
+	Port  int           `yaml:"port"`
 	Rules []MuxSpecRule `yaml:"rules"`
 }
 
