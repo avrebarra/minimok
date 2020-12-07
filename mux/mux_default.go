@@ -6,23 +6,25 @@ import (
 	"os"
 
 	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 )
 
 type Default struct {
 	spec MuxSpec
-	mux  *http.ServeMux
+	mux  http.Handler
 }
 
 func New() Mux {
 	return &Default{
-		mux:  http.NewServeMux(),
+		mux:  http.DefaultServeMux,
 		spec: MuxSpec{},
 	}
 }
 
 func (e *Default) ApplySpec(ctx context.Context, spec MuxSpec) (err error) {
 	e.spec = spec
-	e.mux = http.NewServeMux()
+
+	r := mux.NewRouter()
 
 	for _, rule := range e.spec.Rules {
 		var hfunc http.Handler = buildMuxSpecRuleHandlerFunc(rule)
@@ -30,8 +32,10 @@ func (e *Default) ApplySpec(ctx context.Context, spec MuxSpec) (err error) {
 		hfunc = handlers.CombinedLoggingHandler(os.Stdout, hfunc)
 		hfunc = handlers.CombinedLoggingHandler(os.Stdout, hfunc)
 
-		e.mux.Handle(rule.Accept, hfunc)
+		r.HandleFunc(rule.Accept, hfunc.ServeHTTP)
 	}
+
+	e.mux = r
 
 	return
 }
