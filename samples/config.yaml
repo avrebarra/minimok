@@ -2,7 +2,7 @@ minimok:
 - name: ubuntu_mock_server
   port: 1234
   rules:
-    - accept: /ubuntu/
+    - accept: /
       use_origin: https://askubuntu.com/
       mock_latency:
         mode: swing
@@ -12,7 +12,7 @@ minimok:
 - name: other_mock_server
   port: 1236
   rules:
-    - accept: /godoc/
+    - accept: /
       use_origin: http://godoc.org/
       mock_latency:
         mode: const
