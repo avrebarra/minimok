@@ -2,7 +2,6 @@ package mux
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -26,8 +25,6 @@ func (e *Default) ApplySpec(ctx context.Context, spec MuxSpec) (err error) {
 	e.mux = http.NewServeMux()
 
 	for _, rule := range e.spec.Rules {
-		fmt.Printf("registering: %+v\n", rule)
-
 		var hfunc http.Handler = buildMuxSpecRuleHandlerFunc(rule)
 
 		hfunc = handlers.CombinedLoggingHandler(os.Stdout, hfunc)
