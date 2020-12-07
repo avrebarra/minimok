@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/avrebarra/minimok/minimok"
 	"github.com/avrebarra/minimok/mux"
@@ -58,15 +59,25 @@ func (c *CommandStart) Run() (err error) {
 	}
 
 	// start server(s)
+	waiter := sync.WaitGroup{}
 	for _, ms := range handlers {
-		portaddr := ms.MuxSpec.Port
-		fmt.Printf("starting up mokserver %s on http://localhost:%d\n", ms.MuxSpec.Name, portaddr)
-		err = gracehttp.Serve(&http.Server{Addr: fmt.Sprint(":", portaddr), Handler: ms.Handler})
-		if err != nil {
-			err = fmt.Errorf("failed starting server: %s", ms.MuxSpec.Name)
-			os.Exit(1)
-		}
+		waiter.Add(1)
+		go func(ms minimok.MuxHandler) {
+			defer waiter.Done()
+
+			portaddr := ms.MuxSpec.Port
+			fmt.Printf("starting up mokserver '%s' on http://localhost:%d\n", ms.MuxSpec.Name, portaddr)
+
+			err = gracehttp.Serve(&http.Server{Addr: fmt.Sprint(":", portaddr), Handler: ms.Handler})
+			if err != nil {
+				err = fmt.Errorf("failed starting server: %s: %w", ms.MuxSpec.Name, err)
+				fmt.Println(err.Error())
+				os.Exit(1)
+			}
+		}(ms)
 	}
+
+	waiter.Wait()
 
 	return
 }
