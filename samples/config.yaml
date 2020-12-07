@@ -9,6 +9,16 @@ minimok:
         value: 2000
         swing: 100
 
+- name: ubuntu_mock_server_with_regex
+  port: 1237
+  rules:
+    - accept: /{rest:.*} # use gorilla mux syntax see https://github.com/gorilla/mux
+      use_origin: https://askubuntu.com/
+      mock_latency:
+        mode: swing
+        value: 2000
+        swing: 100
+
 - name: other_mock_server
   port: 1236
   rules:
