@@ -24,15 +24,12 @@ func Initialize() {
 
 	cmdStart := cmd.NewSubCommand("start", "start minimok")
 	{
-		port := 1330
 		cfgpath := ""
 
-		cmdStart.IntFlag("port", "port to bind", &port)
 		cmdStart.StringFlag("conf", "yaml config file path", &cfgpath)
 
 		cmdStart.Action(func() (err error) {
 			subcmd := NewCommandStart(ConfigCommandStart{
-				Port:       port,
 				ConfigPath: cfgpath,
 			})
 			return subcmd.Run()
