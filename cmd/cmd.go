@@ -29,9 +29,13 @@ func Initialize() {
 		cmdStart.StringFlag("conf", "yaml config file path", &cfgpath)
 
 		cmdStart.Action(func() (err error) {
-			subcmd := NewCommandStart(ConfigCommandStart{
+			subcmd, err := NewCommandStart(ConfigCommandStart{
 				ConfigPath: cfgpath,
 			})
+			if err != nil {
+				return
+			}
+
 			return subcmd.Run()
 		})
 	}
@@ -39,6 +43,7 @@ func Initialize() {
 
 func Execute() {
 	if err := cmd.Run(); err != nil {
+		err = fmt.Errorf("unexpected error: %w", err)
 		fmt.Println(err)
 		return
 	}

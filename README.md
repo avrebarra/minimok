@@ -29,26 +29,74 @@ curl https://i.jpillora.com/avrebarra/minimok@{version} | *remove_this* bash
 ```
 
 ## Usage
-### CLI 
-```bash
-# start minimok server. sample config file can be seen at samples/ruleconfig.yaml.
-$ minimok start -conf ./ruleconfig.yaml -port 4434
+### Create a mock
+To create mock, you can define a `configfile.yml` as below:
+```yml
+minimok:
+- name: godoc_mock
+  port: 1236
+  rules:
+    - accept: /
+      use_origin: http://godoc.org/
+      mock_latency: 
+        mode: const   # will constantly/always set response latency
+        value: 2000   # for each calls to 2000ms 
+
+    - accept: /mocked/
+      mock_response:  # send mocked response
+        status: 200
+        body: '{"rules":[{"accept":"/","origin":"http://localhost:9797","mock_response":"","mock_latency":{"mode":"swing","value":"2000","swing":"2000"}}]}'
+        header: {}
+      mock_latency:
+        mode: max
+        value: 10000
 ```
 
+And apply it with this command:
+```sh
+$ ./dist/minimok start -conf ./config.yml
+using configfile ./config.yaml
+starting up mokserver 'godoc_mock' on http://localhost:1236
+```
+
+### Create a proxy port with modified latency
+To create mock, you can define a `configfile.yml` as below:
+```yml
+minimok:
+- name: askubuntu_proxy
+  port: 1234
+  rules:
+    - accept: /
+      use_origin: https://askubuntu.com/
+      mock_latency: 
+        mode: swing   # will set response latency 
+        value: 2000   # for each calls between 1500ms and 2500ms 
+        swing: 500
+
+- name: ubuntu_mock_server_with_regex
+  port: 1237
+  rules:
+    - accept: /{rest:.*} # use gorilla mux syntax see https://github.com/gorilla/mux
+      use_origin: https://askubuntu.com/
+      mock_latency:
+        mode: max     # will set response latency 
+        value: 10000  # for each calls between 0ms and 2500ms 
+```
+
+And apply it with this command:
+```sh
+$ ./dist/minimok start -conf ./config.yml
+using configfile ./config.yaml
+starting up mokserver 'askubuntu_proxy' on http://localhost:1234
+starting up mokserver 'ubuntu_mock_server_with_regex' on http://localhost:1237
+```
+
+
+### Using the CLI 
+Run help to check available commands:
 ```bash
 # check for helps
 $ minimok -help
-
-minimok v0 - mini mock server
-
-Available commands:
-
-   start   start minimok 
-
-Flags:
-
-  -help
-        Get help on the 'minimok' command.
 ```
 
 [godoc-image]: https://godoc.org/github.com/avrebarra/minimok?status.svg

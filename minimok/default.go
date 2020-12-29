@@ -16,11 +16,11 @@ type MinimokStruct struct {
 	config Config
 }
 
-func New(cfg Config) Minimok {
+func New(cfg Config) (Minimok, error) {
 	if err := validator.New().Struct(cfg); err != nil {
-		panic(err)
+		return nil, err
 	}
-	return &MinimokStruct{config: cfg}
+	return &MinimokStruct{config: cfg}, nil
 }
 
 func (e *MinimokStruct) GetHandlers(ctx context.Context) (hs []MuxHandler, err error) {

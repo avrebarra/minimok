@@ -23,14 +23,14 @@ type CommandStart struct {
 	config ConfigCommandStart
 }
 
-func NewCommandStart(cfg ConfigCommandStart) CommandStart {
+func NewCommandStart(cfg ConfigCommandStart) (CommandStart, error) {
 	if err := validator.New().Struct(cfg); err != nil {
-		panic(err)
+		return CommandStart{}, err
 	}
 
 	cmd := CommandStart{config: cfg}
 
-	return cmd
+	return cmd, nil
 }
 
 func (c *CommandStart) Run() (err error) {
@@ -48,9 +48,12 @@ func (c *CommandStart) Run() (err error) {
 	}
 
 	// setup minimok
-	mok := minimok.New(minimok.Config{
+	mok, err := minimok.New(minimok.Config{
 		MuxSpecs: spec.MuxSpecs,
 	})
+	if err != nil {
+		return
+	}
 
 	// get minimok handlers
 	handlers, err := mok.GetHandlers(ctx)
