@@ -23,8 +23,28 @@ func MuxSpecFromYAML(bits []byte) (sp MuxSpec, err error) {
 
 func buildMuxSpecRuleHandlerFunc(rule MuxSpecRule) (hf http.HandlerFunc) {
 	hf = func(w http.ResponseWriter, r *http.Request) {
-		// adjust latencies
-		time.Sleep(decideLatency(rule.MockLatency))
+		// determine latency distribution
+		latTotal := decideLatency(rule.MockLatency)
+		var latEarly, latLate time.Duration
+
+		switch rule.MockLatency.HogMode {
+		case "early":
+			latEarly = latTotal
+			latLate = 0
+			break
+
+		case "late":
+			latEarly = 0
+			latLate = latTotal
+			break
+
+		default:
+			latEarly = latTotal / 2
+			latLate = latTotal / 2
+		}
+
+		// early latency
+		time.Sleep(latEarly)
 
 		// proxy if use origin specified
 		if rule.UseOrigin != "" {
@@ -44,6 +64,9 @@ func buildMuxSpecRuleHandlerFunc(rule MuxSpecRule) (hf http.HandlerFunc) {
 
 			return
 		}
+
+		// late latency
+		time.Sleep(latLate)
 
 		// return mock data
 		w.WriteHeader(rule.MockResponse.Status)

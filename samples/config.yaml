@@ -8,6 +8,7 @@ minimok:
         mode: swing
         value: 2000
         swing: 100
+        hog: early
 
 - name: ubuntu_mock_server_with_regex
   port: 1237
@@ -18,6 +19,7 @@ minimok:
         mode: swing
         value: 2000
         swing: 100
+        hog: late
 
 - name: other_mock_server
   port: 1236

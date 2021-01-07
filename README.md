@@ -72,6 +72,7 @@ minimok:
         mode: swing   # will set response latency 
         value: 2000   # for each calls between 1500ms and 2500ms 
         swing: 500
+        hog: early    # (optional) hog request BEFORE delivering to remote target
 
 - name: ubuntu_mock_server_with_regex
   port: 1237
@@ -80,7 +81,8 @@ minimok:
       use_origin: https://askubuntu.com/
       mock_latency:
         mode: max     # will set response latency 
-        value: 10000  # for each calls between 0ms and 2500ms 
+        value: 10000  # for each calls between 0ms and 2500ms
+        hog: late     # (optional) hog request AFTER delivering to remote target
 ```
 
 And apply it with this command:

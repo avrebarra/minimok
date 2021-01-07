@@ -28,7 +28,8 @@ type MuxSpecRule struct {
 }
 
 type MuxSpecRuleLatency struct {
-	Mode  string `yaml:"mode"`
-	Value int    `yaml:"value"`
-	Swing int    `yaml:"swing"`
+	Mode    string `yaml:"mode"`
+	HogMode string `yaml:"hog"`
+	Value   int    `yaml:"value"`
+	Swing   int    `yaml:"swing"`
 }
