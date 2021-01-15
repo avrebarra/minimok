@@ -12,6 +12,16 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type DelayedResponseWriter struct {
+	http.ResponseWriter
+	Delay time.Duration
+}
+
+func (w DelayedResponseWriter) Write(b []byte) (int, error) {
+	time.Sleep(w.Delay)
+	return w.ResponseWriter.Write(b)
+}
+
 func MuxSpecFromYAML(bits []byte) (sp MuxSpec, err error) {
 	err = yaml.Unmarshal(bits, &sp)
 	if err != nil {
@@ -59,8 +69,9 @@ func buildMuxSpecRuleHandlerFunc(rule MuxSpecRule) (hf http.HandlerFunc) {
 			}
 
 			// run proxy
+			delayedwr := DelayedResponseWriter{ResponseWriter: w, Delay: latLate}
 			proxy := reverseproxy.NewReverseProxy(path)
-			proxy.ServeHTTP(w, r)
+			proxy.ServeHTTP(delayedwr, r)
 
 			return
 		}
