@@ -3,13 +3,11 @@ package mux
 import (
 	"math/rand"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"path"
 	"strings"
 	"time"
-
-	"github.com/cssivision/reverseproxy"
-	"gopkg.in/yaml.v3"
 )
 
 type DelayedResponseWriter struct {
@@ -20,15 +18,6 @@ type DelayedResponseWriter struct {
 func (w DelayedResponseWriter) Write(b []byte) (int, error) {
 	time.Sleep(w.Delay)
 	return w.ResponseWriter.Write(b)
-}
-
-func MuxSpecFromYAML(bits []byte) (sp MuxSpec, err error) {
-	err = yaml.Unmarshal(bits, &sp)
-	if err != nil {
-		return
-	}
-
-	return
 }
 
 func buildMuxSpecRuleHandlerFunc(rule MuxSpecRule) (hf http.HandlerFunc) {
@@ -63,15 +52,15 @@ func buildMuxSpecRuleHandlerFunc(rule MuxSpecRule) (hf http.HandlerFunc) {
 			r.URL.Path = strings.TrimPrefix(r.URL.Path, prefix)
 
 			// parse target url
-			path, err := url.Parse(rule.UseOrigin)
+			urlPath, err := url.Parse(rule.UseOrigin)
 			if err != nil {
 				panic(err)
 			}
 
 			// run proxy
-			delayedwr := DelayedResponseWriter{ResponseWriter: w, Delay: latLate}
-			proxy := reverseproxy.NewReverseProxy(path)
-			proxy.ServeHTTP(delayedwr, r)
+			delayedWriter := DelayedResponseWriter{ResponseWriter: w, Delay: latLate}
+			proxy := httputil.NewSingleHostReverseProxy(urlPath)
+			proxy.ServeHTTP(delayedWriter, r)
 
 			return
 		}
