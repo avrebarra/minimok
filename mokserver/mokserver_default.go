@@ -2,6 +2,7 @@ package mokserver
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"net/url"
 	"os"
@@ -62,11 +63,13 @@ func (e *Default) buildHandlerFunc(rule MokSpecRule) (hf http.HandlerFunc) {
 		var latEarly, latLate time.Duration
 
 		switch rule.MockLatency.HogMode {
+		case "e":
 		case "early":
 			latEarly = latTotal
 			latLate = 0
 			break
 
+		case "l":
 		case "late":
 			latEarly = 0
 			latLate = latTotal
@@ -79,6 +82,9 @@ func (e *Default) buildHandlerFunc(rule MokSpecRule) (hf http.HandlerFunc) {
 
 		// early latency
 		time.Sleep(latEarly)
+		if errors.Is(r.Context().Err(), context.Canceled) {
+			return
+		}
 
 		// proxy if use origin specified
 		if rule.UseOrigin != "" {
