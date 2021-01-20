@@ -17,5 +17,6 @@ require (
 	github.com/leodido/go-urn v1.2.0 // indirect
 	golang.org/x/crypto v0.0.0-20201203163018-be400aefbc4c // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0
+	gopkg.in/yaml.v2 v2.2.2
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776
 )

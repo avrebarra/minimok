@@ -1,37 +1,61 @@
-package mux
+package mokserver
 
 import (
-	"math/rand"
+	"context"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"strings"
 	"time"
 
 	"github.com/cssivision/reverseproxy"
-	"gopkg.in/yaml.v3"
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 )
 
-type DelayedResponseWriter struct {
-	http.ResponseWriter
-	Delay time.Duration
+type Default struct {
+	spec Spec
+	mux  http.Handler
 }
 
-func (w DelayedResponseWriter) Write(b []byte) (int, error) {
-	time.Sleep(w.Delay)
-	return w.ResponseWriter.Write(b)
-}
-
-func MuxSpecFromYAML(bits []byte) (sp MuxSpec, err error) {
-	err = yaml.Unmarshal(bits, &sp)
-	if err != nil {
-		return
+func New() MokServer {
+	return &Default{
+		mux:  http.DefaultServeMux,
+		spec: Spec{},
 	}
+}
+
+func (e *Default) ApplySpec(ctx context.Context, spec Spec) (err error) {
+	e.spec = spec
+
+	r := mux.NewRouter()
+
+	for _, rule := range e.spec.Rules {
+		var hfunc http.Handler = e.buildHandlerFunc(rule)
+
+		hfunc = handlers.CombinedLoggingHandler(os.Stdout, hfunc)
+		hfunc = handlers.CombinedLoggingHandler(os.Stdout, hfunc)
+
+		r.HandleFunc(rule.Accept, hfunc.ServeHTTP)
+	}
+
+	e.mux = r
 
 	return
 }
 
-func buildMuxSpecRuleHandlerFunc(rule MuxSpecRule) (hf http.HandlerFunc) {
+func (e *Default) GetHandler(ctx context.Context) (h http.Handler, err error) {
+	var hfunc http.HandlerFunc = func(rw http.ResponseWriter, r *http.Request) {
+		e.mux.ServeHTTP(rw, r)
+	}
+
+	h = hfunc
+
+	return
+}
+
+func (e *Default) buildHandlerFunc(rule MokSpecRule) (hf http.HandlerFunc) {
 	hf = func(w http.ResponseWriter, r *http.Request) {
 		// determine latency distribution
 		latTotal := decideLatency(rule.MockLatency)
@@ -88,24 +112,6 @@ func buildMuxSpecRuleHandlerFunc(rule MuxSpecRule) (hf http.HandlerFunc) {
 		w.Write([]byte(rule.MockResponse.Body))
 
 		return
-	}
-
-	return
-}
-
-func decideLatency(e MuxSpecRuleLatency) (d time.Duration) {
-	switch e.Mode {
-	case "const":
-		d = time.Duration(e.Value) * time.Millisecond
-		break
-
-	case "max":
-		d = time.Duration(rand.Float64()*float64(e.Value)) * time.Millisecond
-		break
-
-	case "swing":
-		d = time.Duration(rand.Float64()*float64(e.Swing)+float64(e.Value-e.Swing/2)) * time.Millisecond
-		break
 	}
 
 	return

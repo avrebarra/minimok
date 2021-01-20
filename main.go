@@ -1,8 +1,16 @@
 package main
 
-import "github.com/avrebarra/minimok/cmd"
+import (
+	"fmt"
+	"log"
+
+	"github.com/avrebarra/minimok/cmd"
+)
 
 func main() {
-	cmd.Initialize()
-	cmd.Execute()
+	if err := cmd.Execute(); err != nil {
+		err = fmt.Errorf("unexpected error: %w", err)
+		log.Panic(err)
+		return
+	}
 }

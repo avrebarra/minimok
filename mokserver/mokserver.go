@@ -1,22 +1,22 @@
-package mux
+package mokserver
 
 import (
 	"context"
 	"net/http"
 )
 
-type Mux interface {
-	ApplySpec(ctx context.Context, spec MuxSpec) (err error)
+type MokServer interface {
+	ApplySpec(ctx context.Context, spec Spec) (err error)
 	GetHandler(ctx context.Context) (h http.Handler, err error)
 }
 
-type MuxSpec struct {
+type Spec struct {
 	Name  string        `yaml:"name"`
 	Port  int           `yaml:"port"`
-	Rules []MuxSpecRule `yaml:"rules"`
+	Rules []MokSpecRule `yaml:"rules"`
 }
 
-type MuxSpecRule struct {
+type MokSpecRule struct {
 	Accept       string `yaml:"accept"`
 	UseOrigin    string `yaml:"use_origin"`
 	MockResponse struct {
@@ -24,10 +24,10 @@ type MuxSpecRule struct {
 		Body    string            `yaml:"body"`
 		Headers map[string]string `yaml:"header"`
 	} `yaml:"mock_response"`
-	MockLatency MuxSpecRuleLatency `yaml:"mock_latency"`
+	MockLatency MokSpecRuleLatency `yaml:"mock_latency"`
 }
 
-type MuxSpecRuleLatency struct {
+type MokSpecRuleLatency struct {
 	Mode    string `yaml:"mode"`
 	HogMode string `yaml:"hog"`
 	Value   int    `yaml:"value"`

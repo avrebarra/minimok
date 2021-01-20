@@ -1,17 +1,26 @@
 package minimok
 
 import (
-	"context"
 	"net/http"
 
-	"github.com/avrebarra/minimok/mux"
+	"github.com/avrebarra/minimok/mokserver"
+	"gopkg.in/yaml.v2"
 )
 
-type Minimok interface {
-	GetHandlers(ctx context.Context) (hs []MuxHandler, err error)
+type Handler struct {
+	MokSpec mokserver.Spec
+	Handler http.Handler
 }
 
-type MuxHandler struct {
-	MuxSpec mux.MuxSpec
-	Handler http.Handler
+type ConfigFile struct {
+	MokSpecs []mokserver.Spec `yaml:"minimok"`
+}
+
+func ParseConfigFile(bits []byte) (cfg ConfigFile, err error) {
+	err = yaml.Unmarshal(bits, &cfg)
+	if err != nil {
+		return
+	}
+
+	return
 }
