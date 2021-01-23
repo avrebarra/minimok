@@ -77,7 +77,7 @@ minimok:
 - name: ubuntu_mock_server_with_regex
   port: 1237
   rules:
-    - accept: /{rest:.*} # use gorilla mux syntax see https://github.com/gorilla/mux
+    - accept: /{pat:.*} # use gorilla mux syntax see https://github.com/gorilla/mux#matching-routes
       use_origin: https://askubuntu.com/
       mock_latency:
         mode: max     # will set response latency 
@@ -100,6 +100,10 @@ Run help to check available commands:
 # check for helps
 $ minimok -help
 ```
+
+### More spec documentations
+Checkout sample configurations in [samples folder](/samples/)
+
 
 [godoc-image]: https://godoc.org/github.com/avrebarra/minimok?status.svg
 [godoc-url]: https://godoc.org/github.com/avrebarra/minimok

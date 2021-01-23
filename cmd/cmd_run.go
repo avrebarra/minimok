@@ -8,7 +8,9 @@ import (
 	"os/signal"
 
 	"github.com/avrebarra/minimok/minimok"
+	"github.com/avrebarra/minimok/mokserver"
 	"gopkg.in/go-playground/validator.v9"
+	"gopkg.in/yaml.v2"
 )
 
 type configStart struct {
@@ -16,6 +18,10 @@ type configStart struct {
 }
 
 func runStart(cfg configStart) (err error) {
+	type ConfigFile struct {
+		MokSpecs []mokserver.Spec `yaml:"minimok"`
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -35,12 +41,13 @@ func runStart(cfg configStart) (err error) {
 	}()
 
 	// load config file
+	spec := ConfigFile{}
 	fmt.Printf("using configfile %s\n", cfg.ConfigPath)
 	bits, err := ioutil.ReadFile(cfg.ConfigPath)
 	if err != nil {
 		return
 	}
-	spec, err := minimok.ParseConfigFile(bits)
+	err = yaml.Unmarshal(bits, &spec)
 	if err != nil {
 		return
 	}
@@ -61,5 +68,3 @@ func runStart(cfg configStart) (err error) {
 
 	return
 }
-
-// ***

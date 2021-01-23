@@ -28,24 +28,34 @@ func New(cfg Config) (*Minimok, error) {
 
 func (e *Minimok) Start(ctx context.Context) (err error) {
 	// build handlers
-	handlers, err := e.GetHandlers(ctx)
-	if err != nil {
-		return
+	handlers := []Handler{}
+	for _, sp := range e.config.MokSpecs {
+		h, ferr := buildHandler(sp)
+		if ferr != nil {
+			err = ferr
+			return
+		}
+
+		// assign
+		handlers = append(handlers, Handler{
+			MokSpec: sp,
+			Handler: h,
+		})
 	}
 
 	// run servers and block
-	for _, ms := range handlers {
-		go func(ms Handler) {
-			portaddr := ms.MokSpec.Port
-			fmt.Printf("starting up mokserver '%s' on http://localhost:%d\n", ms.MokSpec.Name, portaddr)
+	for _, han := range handlers {
+		go func(han Handler) {
+			portaddr := han.MokSpec.Port
+			fmt.Printf("starting up proxy server '%s' on http://localhost:%d\n", han.MokSpec.Name, portaddr)
 
-			err = gracehttp.Serve(&http.Server{Addr: fmt.Sprint(":", portaddr), Handler: ms.Handler})
+			err = gracehttp.Serve(&http.Server{Addr: fmt.Sprint(":", portaddr), Handler: han.Handler})
 			if err != nil {
-				err = fmt.Errorf("failed starting server: %s: %w", ms.MokSpec.Name, err)
+				err = fmt.Errorf("failed starting server: %s: %w", han.MokSpec.Name, err)
 				fmt.Println(err.Error())
 				os.Exit(1)
 			}
-		}(ms)
+		}(han)
 	}
 
 	<-ctx.Done()
@@ -54,37 +64,18 @@ func (e *Minimok) Start(ctx context.Context) (err error) {
 	return
 }
 
-func (e *Minimok) GetHandlers(ctx context.Context) (hs []Handler, err error) {
-	hs = []Handler{}
-
-	for _, sp := range e.config.MokSpecs {
-		// build mokserver
-		var m mokserver.MokServer
-		if m, err = e.buildMokServer(sp); err != nil {
-			return
-		}
-
-		// get handler
-		var h http.Handler
-		if h, err = m.GetHandler(ctx); err != nil {
-			return
-		}
-
-		// assign
-		hs = append(hs, Handler{
-			MokSpec: sp,
-			Handler: h,
-		})
-	}
-
-	return
-}
-
-func (e *Minimok) buildMokServer(s mokserver.Spec) (m mokserver.MokServer, err error) {
-	m = mokserver.New()
-	err = m.ApplySpec(context.Background(), s)
+func buildHandler(sp mokserver.Spec) (h http.Handler, err error) {
+	// build mokserver
+	m := mokserver.New()
+	err = m.ApplySpec(context.Background(), sp)
 	if err != nil {
 		return
 	}
+
+	// get handler
+	if h, err = m.GetHandler(context.TODO()); err != nil {
+		return
+	}
+
 	return
 }
